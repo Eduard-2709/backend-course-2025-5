@@ -31,25 +31,6 @@ function getCacheFilePath(statusCode) {
     return path.join(options.cache, `${statusCode}.jpg`);
 }
 
-// Оновлений обробник GET запиту
-async function handleGet(req, res, statusCode) {
-    try {
-        const filePath = getCacheFilePath(statusCode);
-        const imageData = await fs.readFile(filePath);
-
-        res.writeHead(200, {
-            'Content-Type': 'image/jpeg',
-            'Content-Length': imageData.length
-        });
-        res.end(imageData);
-        console.log(`Відправлено кешовану картинку для статусу ${statusCode}`);
-    } catch (error) {
-        // Якщо картинки немає в кеші, робимо запит до http.cat
-        console.log(`Картинки для статусу ${statusCode} немає в кеші, запитуємо з http.cat...`);
-        await fetchFromHttpCat(req, res, statusCode);
-    }
-}
-
 // Запит картинки з http.cat
 async function fetchFromHttpCat(req, res, statusCode) {
     try {
@@ -75,6 +56,25 @@ async function fetchFromHttpCat(req, res, statusCode) {
         console.log(`Помилка отримання картинки для статусу ${statusCode} з http.cat:`, error.message);
         res.writeHead(404, { 'Content-Type': 'text/plain' });
         res.end('Not Found');
+    }
+}
+
+// Обробник GET запиту
+async function handleGet(req, res, statusCode) {
+    try {
+        const filePath = getCacheFilePath(statusCode);
+        const imageData = await fs.readFile(filePath);
+
+        res.writeHead(200, {
+            'Content-Type': 'image/jpeg',
+            'Content-Length': imageData.length
+        });
+        res.end(imageData);
+        console.log(`Відправлено кешовану картинку для статусу ${statusCode}`);
+    } catch (error) {
+        // Якщо картинки немає в кеші, робимо запит до http.cat
+        console.log(`Картинки для статусу ${statusCode} немає в кеші, запитуємо з http.cat...`);
+        await fetchFromHttpCat(req, res, statusCode);
     }
 }
 
