@@ -1,0 +1,21 @@
+{
+  "name": "backend-course-2025-5",
+  "version": "1.0.0",
+  "description": "Примітивний кешуючий проксі-сервер",
+  "main": "main.js",
+  "type": "module",
+  "scripts": {
+    "start": "node main.js",
+    "dev": "nodemon main.js"
+  },
+  "dependencies": {
+    "commander": "^11.1.0",
+    "superagent": "^8.1.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "keywords": [ "proxy", "cache", "http" ],
+  "author": "Едуард bc2024-5",
+  "license": "MIT"
+}
