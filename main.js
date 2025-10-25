@@ -31,7 +31,7 @@ function getCacheFilePath(statusCode) {
     return path.join(options.cache, `${statusCode}.jpg`);
 }
 
-// Обробник GET запиту
+// Оновлений обробник GET запиту
 async function handleGet(req, res, statusCode) {
     try {
         const filePath = getCacheFilePath(statusCode);
@@ -44,9 +44,37 @@ async function handleGet(req, res, statusCode) {
         res.end(imageData);
         console.log(`Відправлено кешовану картинку для статусу ${statusCode}`);
     } catch (error) {
+        // Якщо картинки немає в кеші, робимо запит до http.cat
+        console.log(`Картинки для статусу ${statusCode} немає в кеші, запитуємо з http.cat...`);
+        await fetchFromHttpCat(req, res, statusCode);
+    }
+}
+
+// Запит картинки з http.cat
+async function fetchFromHttpCat(req, res, statusCode) {
+    try {
+        const response = await superagent
+            .get(`https://http.cat/${statusCode}`)
+            .responseType('blob');
+
+        const imageData = response.body;
+
+        // Зберігаємо в кеш
+        const filePath = getCacheFilePath(statusCode);
+        await fs.writeFile(filePath, imageData);
+
+        // Відправляємо клієнту
+        res.writeHead(200, {
+            'Content-Type': 'image/jpeg',
+            'Content-Length': imageData.length
+        });
+        res.end(imageData);
+
+        console.log(`Картинку для статусу ${statusCode} отримано з http.cat та збережено в кеш`);
+    } catch (error) {
+        console.log(`Помилка отримання картинки для статусу ${statusCode} з http.cat:`, error.message);
         res.writeHead(404, { 'Content-Type': 'text/plain' });
         res.end('Not Found');
-        console.log(`Картинку для статусу ${statusCode} не знайдено в кеші`);
     }
 }
 
